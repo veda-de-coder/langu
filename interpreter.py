@@ -88,8 +88,9 @@ class Interpreter:
         if method is None:
             raise RuntimeError(f"No visit method for {type(node).__name__}")
         return method(node)
-    
+        
     def visit_ClassNode(self, node):
+        # Store class with its parent reference
         self.classes[node.name] = node
         
         class_env = Environment(self.current_env)
@@ -97,6 +98,23 @@ class Interpreter:
         self.current_env = class_env
         
         try:
+            # If there's a parent class, inherit its properties/methods
+            if node.parent_class:
+                if node.parent_class not in self.classes:
+                    raise RuntimeError(f"Parent class not found: {node.parent_class}")
+                
+                parent_class = self.classes[node.parent_class]
+                # Create a temporary instance to copy properties
+                temp_parent = ObjectInstance(node.parent_class, parent_class)
+                self.visit_ClassNode(parent_class)  # Ensure parent is processed
+                
+                # Copy parent properties to current class
+                for prop, value in temp_parent.properties.items():
+                    class_env.set(prop, value)
+                for method_name, method in temp_parent.methods.items():
+                    class_env.set(method_name, method)
+            
+            # Process current class body
             for stmt in node.body:
                 self.visit(stmt)
         finally:

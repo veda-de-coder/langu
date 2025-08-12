@@ -79,3 +79,11 @@ class BooleanNode:
 class NullNode:
     def __init__(self):
         self.value = None
+
+class ExtendsNode:
+    def __init__(self, parent_class):
+        self.parent_class = parent_class
+
+class SuperNode:
+    def __init__(self):
+        pass

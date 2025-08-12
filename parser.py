@@ -56,7 +56,7 @@ class Parser:
             expr = self.parse_expression()
             self.eat(SEMI)
             return expr
-        
+    
     def parse_class(self):
         self.eat(CLASS)
         name = self.current_token.value
@@ -64,7 +64,7 @@ class Parser:
         
         # Add inheritance support
         parent_class = None
-        if self.current_token.type == EXTENDS:  # Need to add EXTENDS to Tokeniser
+        if self.current_token.type == EXTENDS:
             self.eat(EXTENDS)
             parent_class = self.current_token.value
             self.eat(IDENTIFIER)
@@ -279,5 +279,9 @@ class Parser:
             self.eat(RPAREN)
             return expr
         
+        elif self.current_token.type == SUPER:
+            self.eat(SUPER)
+            return SuperNode()
+            
         else:
             self.error(f"Unexpected token in expression: {self.current_token.type}")

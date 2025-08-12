@@ -39,7 +39,7 @@ class Method:
         self.parameters = parameters
         self.body = body
         self.closure_env = closure_env
-    
+
     def call(self, interpreter, arguments, instance=None):
         if len(arguments) != len(self.parameters):
             raise RuntimeError(f"Method {self.name} expects {len(self.parameters)} arguments, got {len(arguments)}")
@@ -48,6 +48,9 @@ class Method:
         
         if instance:
             method_env.set("this", instance)
+            # Add super reference if this is an overriding method
+            if self.is_override and hasattr(instance, 'parent'):
+                method_env.set("super", instance.parent)
         
         for i, param in enumerate(self.parameters):
             method_env.set(param, arguments[i])
@@ -63,6 +66,7 @@ class Method:
             return ret.value
         finally:
             interpreter.current_env = previous_env
+
 
 class Interpreter:
     def __init__(self):
@@ -129,19 +133,39 @@ class Interpreter:
         class_def = self.classes[node.class_name]
         obj = ObjectInstance(node.class_name, class_def)
         
+        # Set up parent reference if exists
+        if class_def.parent_class:
+            if class_def.parent_class not in self.classes:
+                raise RuntimeError(f"Parent class not found: {class_def.parent_class}")
+            parent_class_def = self.classes[class_def.parent_class]
+            obj.parent = ObjectInstance(class_def.parent_class, parent_class_def)
+        
         obj_env = Environment(self.current_env)
         obj_env.set("this", obj)
         previous_env = self.current_env
         self.current_env = obj_env
         
         try:
-            for stmt in class_def.body:
-                if isinstance(stmt, AssignmentNode) and isinstance(stmt.target, VariableNode):
-                    value = self.visit(stmt.value)
-                    obj.set_property(stmt.target.name, value)
-                elif isinstance(stmt, MethodNode):
-                    method = Method(stmt.name, stmt.parameters, stmt.body, self.current_env)
-                    obj.add_method(stmt.name, method)
+            # Process inheritance chain
+            current_class = class_def
+            while current_class:
+                for stmt in current_class.body:
+                    if isinstance(stmt, AssignmentNode) and isinstance(stmt.target, VariableNode):
+                        value = self.visit(stmt.value)
+                        obj.set_property(stmt.target.name, value)
+                    elif isinstance(stmt, MethodNode):
+                        # Check if this method overrides a parent method
+                        is_override = (hasattr(obj, 'parent') and 
+                                    obj.parent.has_method(stmt.name))
+                        method = Method(stmt.name, stmt.parameters, stmt.body, 
+                                    self.current_env, is_override)
+                        obj.add_method(stmt.name, method)
+                
+                # Move to parent class
+                if hasattr(current_class, 'parent_class') and current_class.parent_class:
+                    current_class = self.classes[current_class.parent_class]
+                else:
+                    current_class = None
         finally:
             self.current_env = previous_env
         

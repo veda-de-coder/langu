@@ -1,0 +1,43 @@
+class Token:
+    def __init__(self, token_type, value):
+        self.type = token_type
+        self.value = value
+    
+    def __repr__(self):
+        return f"Token({self.type}, {self.value})"
+
+CLASS = "CLASS"
+IDENTIFIER = "IDENTIFIER"
+LBRACE = "LBRACE"
+RBRACE = "RBRACE"
+LPAREN = "LPAREN"
+RPAREN = "RPAREN"
+EQUALS = "EQUALS"
+DOT = "DOT"
+NEW = "NEW"
+PRINT = "PRINT"
+IF = "IF"
+WHILE = "WHILE"
+RETURN = "RETURN"
+FUNCTION = "FUNCTION"
+NUMBER = "NUMBER"
+STRING = "STRING"
+SEMI = "SEMI"
+COMMA = "COMMA"
+PLUS = "PLUS"
+MINUS = "MINUS"
+MULTIPLY = "MULTIPLY"
+DIVIDE = "DIVIDE"
+EQ = "EQ"
+NE = "NE"
+LT = "LT"
+GT = "GT"
+LE = "LE"
+GE = "GE"
+AND = "AND"
+OR = "OR"
+NOT = "NOT"
+TRUE = "TRUE"
+FALSE = "FALSE"
+NULL = "NULL"
+EOF = "EOF"

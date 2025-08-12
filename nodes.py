@@ -1,7 +1,8 @@
 class ClassNode:
-    def __init__(self, name, body):
+    def __init__(self, name, body, parent_class=None):
         self.name = name
         self.body = body
+        self.parent_class = parent_class
 
 class MethodNode:
     def __init__(self, name, parameters, body):

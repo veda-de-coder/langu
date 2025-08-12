@@ -56,21 +56,27 @@ class Parser:
             expr = self.parse_expression()
             self.eat(SEMI)
             return expr
-    
+        
     def parse_class(self):
         self.eat(CLASS)
         name = self.current_token.value
         self.eat(IDENTIFIER)
-        self.eat(LBRACE)
         
+        # Add inheritance support
+        parent_class = None
+        if self.current_token.type == EXTENDS:  # Need to add EXTENDS to Tokeniser
+            self.eat(EXTENDS)
+            parent_class = self.current_token.value
+            self.eat(IDENTIFIER)
+        
+        self.eat(LBRACE)
         body = []
         while self.current_token.type != RBRACE:
             stmt = self.parse_statement()
             if stmt:
                 body.append(stmt)
-        
         self.eat(RBRACE)
-        return ClassNode(name, body)
+        return ClassNode(name, body, parent_class)
     
     def parse_if(self):
         self.eat(IF)
